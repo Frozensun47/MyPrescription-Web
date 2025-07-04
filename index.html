@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyPrescription - Your Digital Health Companion</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .nav-link.active {
+            color: #3b82f6; /* text-blue-500 */
+        }
+
+        /* --- Custom Phone Mockup Styles --- */
+        .phone-mockup-wrapper {
+            height: 100%;
+        }
+
+        .phone-mockup {
+            position: sticky;
+            top: 6rem;
+            width: 280px;
+            height: 570px;
+            background: #1f2937; /* bg-gray-800 */
+            border-radius: 40px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 
+                        inset 0 0 0 5px #111827; /* bg-gray-900 */
+            padding: 12px;
+        }
+
+        .phone-screen {
+            background: #fff;
+            border-radius: 28px;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .phone-screen img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: opacity 0.4s ease-in-out;
+            opacity: 0;
+        }
+
+        .phone-screen img.visible {
+            opacity: 1;
+        }
+        
+        .feature-item {
+            min-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        /* --- Modal Styles --- */
+        .modal {
+            display: none; /* Hidden by default */
+        }
+        .modal.visible {
+            display: flex; /* Show the modal */
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <header class="w-full bg-white/80 backdrop-blur-lg sticky top-0 z-50 border-b border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0 flex items-center gap-3">
+                    <img src="asset/Logo.png" alt="MyPrescription Logo" class="h-10 w-auto" onerror="this.onerror=null;this.src='https://placehold.co/40x40/3B82F6/FFFFFF?text=M';">
+                    <span class="text-2xl font-bold tracking-tight">MyPrescription</span>
+                </div>
+                <nav id="nav" class="hidden md:flex items-center gap-2">
+                    <a href="#/" data-page="home" class="nav-link text-gray-600 hover:text-blue-500 font-medium py-2 px-4 rounded-lg">Home</a>
+                    <a href="#/privacy" data-page="privacy" class="nav-link text-gray-600 hover:text-blue-500 font-medium py-2 px-4 rounded-lg">Privacy</a>
+                    <a href="#/terms-and-conditions" data-page="terms" class="nav-link text-gray-600 hover:text-blue-500 font-medium py-2 px-4 rounded-lg">Terms</a>
+                    <a href="#/about" data-page="about" class="nav-link text-gray-600 hover:text-blue-500 font-medium py-2 px-4 rounded-lg">About</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main id="contentArea" class="w-full">
+        </main>
+
+    <footer class="w-full bg-gray-800 text-gray-400">
+        <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 text-center">
+            <div class="flex justify-center space-x-6 mb-4">
+                <a href="https://www.linkedin.com/company/107489580/" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white">
+                    <span class="sr-only">LinkedIn</span>
+                    <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+                    </svg>
+                </a>
+           </div>
+            <p>&copy; <span id="currentYear"></span> MyPrescription. All rights reserved.</p>
+            <p class="mt-1 text-sm">Your health, simplified and secure.</p>
+        </div>
+    </footer>
+
+    <div id="popupModal" class="modal fixed inset-0 bg-gray-900 bg-opacity-60 items-center justify-center z-50 p-4">
+        <div id="modalContent" class="bg-white p-8 rounded-lg shadow-xl text-center max-w-sm w-full">
+            <h3 class="text-2xl font-bold text-gray-800 mb-2">Launching Soon!</h3>
+            <p class="text-gray-600 mb-6">Our app is currently in the final stages of testing.</p>
+            <button id="closeModal" class="bg-blue-500 text-white font-semibold py-2 px-6 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">Got it</button>
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const contentArea = document.getElementById('contentArea');
+            const nav = document.getElementById('nav');
+            const currentYearSpan = document.getElementById('currentYear');
+            
+            currentYearSpan.textContent = new Date().getFullYear();
+
+            // --- Page Content Definitions ---
+            const pages = {
+                home: `
+                <div class="bg-white">
+                    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row gap-8 md:gap-16">
+                        <div class="w-full md:w-3/5">
+                            <div class="feature-item" data-img-index="0">
+                                <h1 class="text-4xl md:text-6xl font-extrabold tracking-tighter text-gray-900">
+                                    Manage Your Prescriptions, <span class="text-blue-500">Effortlessly.</span>
+                                </h1>
+                                <p class="mt-6 text-lg text-gray-600 max-w-xl">
+                                    MyPrescription is a secure, offline-first app that helps you store, organize, and understand your medical prescriptions right on your device.
+                                </p>
+                                <div class="mt-8 flex justify-start gap-4">
+                                    <a href="#" class="download-btn bg-blue-500 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-600 transition-all transform hover:scale-105">Download App</a>
+                                </div>
+                            </div>
+                            <div class="feature-item" data-img-index="1">
+                                <h3 class="text-3xl font-bold text-gray-900">Lock Down Your Data 🔒</h3>
+                                <p class="mt-4 text-lg text-gray-600 max-w-xl">Security is paramount. MyPrescription is an offline-first app, secured with your Google account. Your sensitive health data never leaves your device and is never shared with us.</p>
+                            </div>
+                            <div class="feature-item" data-img-index="2">
+                                <h3 class="text-3xl font-bold text-gray-900">Manage the Whole Family 👨‍👩‍👧‍👦</h3>
+                                <p class="mt-4 text-lg text-gray-600 max-w-xl">Keep track of not just your own, but your entire family's health records. Easily add profiles to manage their prescriptions and doctor visits all in one place.</p>
+                            </div>
+                             <div class="feature-item" data-img-index="3">
+                                <h3 class="text-3xl font-bold text-gray-900">Your Doctors, Organized 🩺</h3>
+                                <p class="mt-4 text-lg text-gray-600 max-w-xl">Save contact information and notes for all your healthcare providers. Quickly access your doctor's details when you need them most.</p>
+                            </div>
+                             <div class="feature-item" data-img-index="4">
+                                <h3 class="text-3xl font-bold text-gray-900">Track Every Visit & Prescription 📝</h3>
+                                <p class="mt-4 text-lg text-gray-600 max-w-xl">For every doctor's visit, create a new entry. Attach the corresponding prescription, add notes, and create a clear timeline of your health journey.</p>
+                            </div>
+                             <div class="feature-item" data-img-index="5">
+                                <h3 class="text-3xl font-bold text-gray-900">View & Share with Ease 📲</h3>
+                                <p class="mt-4 text-lg text-gray-600 max-w-xl">Need to show a prescription to a pharmacist or a new doctor? Share it directly from the app in a clear, readable format.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="hidden md:block w-full md:w-2/5">
+                            <div class="phone-mockup-wrapper">
+                                <div class="phone-mockup">
+                                    <div class="phone-screen">
+                                        <img class="phone-img" src="asset/app_ss_1.png" alt="App Screenshot 1">
+                                        <img class="phone-img" src="asset/app_ss_2.png" alt="App Screenshot 2 - PIN screen">
+                                        <img class="phone-img" src="asset/app_ss_3.png" alt="App Screenshot 3 - Family members">
+                                        <img class="phone-img" src="asset/app_ss_4.png" alt="App Screenshot 4 - Doctors list">
+                                        <img class="phone-img" src="asset/app_ss_5.png" alt="App Screenshot 5 - Appointments">
+                                        <img class="phone-img" src="asset/app_ss_5.png" alt="App Screenshot 6 - Prescription view">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <section class="py-20 bg-slate-50">
+                        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                            <div class="text-center">
+                                <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">How It Works in 3 Simple Steps</h2>
+                                <p class="mt-4 text-lg text-gray-600">Get organized in minutes. Health management has never been this easy.</p>
+                            </div>
+                            <div class="mt-12 grid md:grid-cols-3 gap-12 text-center">
+                                <div>
+                                    <div class="flex items-center justify-center h-12 w-12 rounded-md bg-blue-500 text-white mx-auto">
+                                        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM4 19.235v-.11a6.375 6.375 0 0112.75 0v.109A12.318 12.318 0 0110.374 21c-2.331 0-4.512-.645-6.374-1.766z" /></svg>
+                                    </div>
+                                    <h3 class="mt-5 text-lg font-semibold text-gray-900">Create Profiles</h3>
+                                    <p class="mt-2 text-base text-gray-600">Add separate profiles for yourself and each family member to keep records neatly organized.</p>
+                                </div>
+                                <div>
+                                    <div class="flex items-center justify-center h-12 w-12 rounded-md bg-blue-500 text-white mx-auto">
+                                         <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 00-1.883 2.542l.857 6a2.25 2.25 0 002.227 1.932H19.05a2.25 2.25 0 002.227-1.932l.857-6a2.25 2.25 0 00-1.883-2.542m-16.5 0A2.25 2.25 0 016 7.5h12a2.25 2.25 0 012.25 2.25m-16.5 0a2.25 2.25 0 00-1.883 2.542l.857 6a2.25 2.25 0 002.227 1.932H19.05a2.25 2.25 0 002.227-1.932l.857-6a2.25 2.25 0 00-1.883-2.542" /></svg>
+                                    </div>
+                                    <h3 class="mt-5 text-lg font-semibold text-gray-900">Log Visits & Prescriptions</h3>
+                                    <p class="mt-2 text-base text-gray-600">After a doctor's visit, create an entry and simply snap a photo of the prescription to save it.</p>
+                                </div>
+                                <div>
+                                    <div class="flex items-center justify-center h-12 w-12 rounded-md bg-blue-500 text-white mx-auto">
+                                        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 100 4.5 2.25 2.25 0 000-4.5zM1.933 10.907a2.25 2.25 0 100 4.5 2.25 2.25 0 000-4.5zM12.5 10.907a2.25 2.25 0 100 4.5 2.25 2.25 0 000-4.5zM19.067 10.907a2.25 2.25 0 100 4.5 2.25 2.25 0 000-4.5z" /></svg>
+                                    </div>
+                                    <h3 class="mt-5 text-lg font-semibold text-gray-900">Access & Share Securely</h3>
+                                    <p class="mt-2 text-base text-gray-600">Your data stays on your phone. View your history or share a prescription with a pharmacist anytime.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    
+                    <section class="py-20">
+                        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                            <div class="text-center">
+                                <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">Loved by Users Across India</h2>
+                                <p class="mt-4 text-lg text-gray-600">Don't just take our word for it. Here's what our users are saying.</p>
+                            </div>
+                            <div class="mt-12 grid md:grid-cols-2 gap-8">
+                                <div class="bg-slate-100 p-8 rounded-lg">
+                                    <p class="text-gray-700">"This app is a lifesaver! I manage prescriptions for my elderly parents and myself. Now everything is in one place. It's so simple to use and I love that my data is private."</p>
+                                    <p class="mt-4 font-bold text-gray-900">- Priya S., Bangalore</p>
+                                </div>
+                                <div class="bg-slate-100 p-8 rounded-lg">
+                                    <p class="text-gray-700">"Finally, an app that does exactly what it says. No ads, no confusing features. Just a straightforward way to keep track of my medical history. Highly recommended."</p>
+                                    <p class="mt-4 font-bold text-gray-900">- Rohan M., Mumbai</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="bg-blue-600">
+                        <div class="max-w-4xl mx-auto text-center py-16 px-4 sm:py-20 sm:px-6 lg:px-8">
+                            <h2 class="text-3xl font-extrabold text-white sm:text-4xl">
+                                <span class="block">Ready to Take Control of Your Health Records?</span>
+                            </h2>
+                            <p class="mt-4 text-lg leading-6 text-blue-100">Download MyPrescription today and experience the peace of mind that comes with having all your medical information securely in one place, right in your pocket.</p>
+                            <a href="#" class="download-btn mt-8 w-full inline-flex items-center justify-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-blue-600 bg-white hover:bg-blue-50 sm:w-auto">
+                                Download for Free
+                            </a>
+                        </div>
+                    </section>
+                </div>
+                `,
+                privacy: `
+                <div class="max-w-3xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
+                    <h2 class="text-4xl font-bold text-gray-900 mb-2">Privacy Policy for MyPrescription</h2>
+                    <p class="text-md text-gray-500 mb-8">Last updated: July 4, 2025</p>
+                    <div class="prose prose-lg max-w-none text-gray-700 space-y-4">
+                        <p>This Privacy Policy describes how your personal information is handled in the MyPrescription mobile application (the "App").</p>
+                        
+                        <h3>Our Data Philosophy: Your Device, Your Data</h3>
+                        <p>MyPrescription is designed as an offline-first application. While you provide personal information to the app for it to function, we want to be crystal clear:</p>
+                        <p><strong>The App does not transmit your personal data to us or any third party.</strong> The information you enter is for your use only and includes:</p>
+                        <ul class="list-disc list-inside">
+                            <li>Your name, age, or gender</li>
+                            <li>Your prescriptions or medical history</li>
+                            <li>Your doctor's information</li>
+                            <li>Any images or files you upload</li>
+                        </ul>
+
+                        <h3>Local Data Storage</h3>
+                        <p>All data you enter into the App is stored exclusively in a private, secure area on your own device. It is never transmitted to us. This means we cannot see, access, or recover your data.</p>
+
+                        <h3>Third-Party Services</h3>
+                        <p><strong>Google Sign-In:</strong> We use Google Sign-In as our sole method of authentication. When you sign in, you are providing your login credentials directly to Google. We only receive basic account information, such as your email address and display name, to identify your account, and this is also stored only on your device. We do not receive or store your password. Your use of Google Sign-In is governed by Google's Privacy Policy.</p>
+
+                        <h3>Data Deletion and User Rights</h3>
+                        <p>You have complete control over your data. You can add, edit, and delete any information at any time within the app. When you choose to delete your account from the 'Settings' screen, the following actions are performed:</p>
+                        <ul class="list-disc list-inside space-y-2">
+                           <li><strong>On-Device Data:</strong> All application data, including your family members' details, prescriptions, and reports, will be permanently deleted from your device's internal storage.</li>
+                           <li><strong>Account Information:</strong> Your authentication account with Google will be deleted.</li>
+                           <li><strong>Backup Files:</strong> Any backup files created using the app's backup feature are stored in your device's shared storage (e.g., the Downloads folder). The app does not have the permission to automatically delete these files. You are responsible for manually deleting any backup files you have created if you wish to remove them completely.</li>
+                        </ul>
+
+                        <h3>Handling of Children's Information</h3>
+                        <p>This App is not directed to children under the age of 13, and the app itself does not knowingly collect or transmit any data. A parent or guardian may choose to enter information about their child into the app for management purposes. In such cases, the parent or guardian is solely responsible for this data, which remains stored only on their device. The user can edit or delete this information at any time.</p>
+
+                        <h3>Contact Us</h3>
+                        <p>If you have any questions about this Privacy Policy, you can contact us at <a href="mailto:support@myapplications.store" class="text-blue-500 hover:text-blue-600">support@myapplications.store</a>.</p>
+                    </div>
+                </div>`,
+                terms: `
+                <div class="max-w-3xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
+                    <h2 class="text-4xl font-bold text-gray-900 mb-2">Terms and Conditions for MyPrescription</h2>
+                    <p class="text-md text-gray-500 mb-8">Last updated: July 4, 2025</p>
+                    <div class="prose prose-lg max-w-none text-gray-700 space-y-4">
+                        <p>Welcome to MyPrescription! We are happy to have you on board. Before you start using the app, please read these Terms and Conditions carefully. By downloading, accessing, or using the MyPrescription mobile application (the "App"), you agree to be bound by these terms. If you do not agree with any part of these terms, you should not use the App.</p>
+                        <p>These Terms and Conditions are specifically for our users in India.</p>
+
+                        <h3>1. About the App</h3>
+                        <p>MyPrescription is a simple, offline-first application designed to help you store and manage your medical prescriptions digitally on your own device. You can add details about your prescriptions and keep them organized for easy access.</p>
+                        
+                        <h3>2. Your Privacy and Data</h3>
+                        <p>This is the most important part, so please read it carefully.</p>
+                        <p><strong>We Do Not Store Your Data:</strong> MyPrescription does not have any online servers. We do not collect, store, or have access to any of your personal information or your prescription data.</p>
+                        <p><strong>Data Stays on Your Device:</strong> All the information you enter into the App, including your name, doctor's details, and images of your prescriptions, is stored only on your personal mobile device.</p>
+                        <p><strong>Authentication Data:</strong> To provide a secure and easy login experience, we use Google Sign-In for authentication. This means your login information (such as your email address and name) is managed by Google. We do not store your password. Your use of Google Sign-In is subject to Google's Terms of Service and Privacy Policy.</p>
+                        <p><strong>Your Responsibility:</strong> Because your data is stored locally, the security of that data is in your hands. You are responsible for keeping your device secure (for example, by using a password or fingerprint lock). If you lose your device or it gets damaged, we cannot recover your data for you.</p>
+
+                        <h3>3. Medical Disclaimer</h3>
+                        <p><strong>Not a Medical Device:</strong> MyPrescription is an organizational tool. It is not a medical device and should not be considered a substitute for professional medical advice, diagnosis, or treatment.</p>
+                        <p><strong>Always Consult Your Doctor:</strong> Always seek the advice of your physician or other qualified health provider with any questions you may have regarding a medical condition. Never disregard professional medical advice or delay in seeking it because of something you have read or stored on this App.</p>
+                        <p><strong>Accuracy of Information:</strong> You are responsible for the accuracy and completeness of the information you enter into the App.</p>
+
+                        <h3>4. Using the App</h3>
+                        <p><strong>License to Use:</strong> We grant you a limited, non-exclusive, non-transferable, and revocable license to use the App for your own personal, non-commercial use.</p>
+                        <p><strong>Account Deletion:</strong> You have the right to delete your account at any time from the 'Settings' screen. Deleting your account is a permanent action that will erase all data stored within the app on your device.</p>
+                        <p><strong>What You Cannot Do:</strong> You agree not to:</p>
+                        <ul class="list-disc list-inside">
+                          <li>Use the App for any illegal purpose.</li>
+                          <li>Try to copy, modify, or distribute the App's content without our permission.</li>
+                          <li>Attempt to reverse engineer or extract the source code of the App.</li>
+                        </ul>
+
+                        <h3>5. No Warranty</h3>
+                        <p>The App is provided to you "AS IS" and "AS AVAILABLE" without any warranties of any kind. We do not guarantee that the App will always be secure, error-free, or that it will always function without disruptions, delays, or imperfections.</p>
+                        
+                        <h3>6. Limitation of Liability</h3>
+                        <p>To the fullest extent permitted by law in India, the developer of MyPrescription shall not be liable for any direct, indirect, incidental, special, consequential, or punitive damages, or any loss of data, opportunities, reputation, or profits, arising out of your use or inability to use the App. This includes any loss of data from your device.</p>
+
+                        <h3>7. Changes to These Terms</h3>
+                        <p>We may update these Terms and Conditions from time to time. We will notify you of any changes by posting the new Terms and Conditions within the App. You are advised to review this page periodically for any changes. Your continued use of the App after any changes constitutes your acceptance of the new terms.</p>
+
+                        <h3>8. Governing Law and Jurisdiction</h3>
+                        <p>These Terms and Conditions are governed by and construed in accordance with the laws of the Republic of India. Any disputes arising out of or in connection with these terms shall be subject to the exclusive jurisdiction of the courts in Mumbai, India.</p>
+
+                        <h3>9. Contact Us</h3>
+                        <p>If you have any questions or suggestions about our Terms and Conditions, do not hesitate to contact us at <a href="mailto:support@myapplications.store" class="text-blue-500 hover:text-blue-600">support@myapplications.store</a>.</p>
+                    </div>
+                </div>`,
+                about: `
+                <div class="max-w-3xl mx-auto py-16 px-4 sm:px-6 lg:px-8 text-center">
+                    <h2 class="text-4xl font-bold text-gray-900 mb-4">About MyPrescription</h2>
+                    <p class="text-xl text-gray-600 max-w-2xl mx-auto">We believe managing prescriptions shouldn't be complicated. Our team is dedicated to building a user-friendly, private, and powerful tool that puts you first.</p>
+                    <div class="mt-8">
+                        <h3 class="text-lg font-semibold text-gray-800">Get in Touch</h3>
+                        <p class="mt-2 text-gray-600">Have questions or feedback? Contact us at:</p>
+                        <a href="mailto:support@myapplications.store" class="text-blue-500 hover:text-blue-600 font-medium">support@myapplications.store</a>
+                        <div class="mt-6 flex justify-center items-center">
+                             <a href="https://www.linkedin.com/company/107489580/" target="_blank" rel="noopener noreferrer" class="text-gray-500 hover:text-blue-600">
+                                  <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                       <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+                                  </svg>
+                                  <span class="sr-only">LinkedIn</span>
+                             </a>
+                        </div>
+                    </div>
+                </div>`
+            };
+            
+            // --- Modal Logic ---
+            const modal = document.getElementById('popupModal');
+            const modalContent = document.getElementById('modalContent');
+            const closeModalBtn = document.getElementById('closeModal');
+
+            function showModal() {
+                modal.classList.add('visible');
+            }
+
+            function hideModal() {
+                modal.classList.remove('visible');
+            }
+
+            // Use event delegation for download buttons
+            document.body.addEventListener('click', function(event) {
+                if (event.target.closest('.download-btn')) {
+                    event.preventDefault();
+                    showModal();
+                }
+            });
+
+            closeModalBtn.addEventListener('click', hideModal);
+            
+            // Close modal by clicking on the background
+            modal.addEventListener('click', function(event) {
+                if (event.target === modal) {
+                    hideModal();
+                }
+            });
+
+            // Close modal with Escape key
+            window.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape' && modal.classList.contains('visible')) {
+                    hideModal();
+                }
+            });
+
+
+            // --- Sticky Scroll Image Swap Logic ---
+            function initStickyScroll() {
+                const featureItems = document.querySelectorAll('.feature-item');
+                const phoneImages = document.querySelectorAll('.phone-img');
+                if (!featureItems.length || !phoneImages.length) return;
+
+                // Set the first image to be visible by default
+                if(phoneImages.length > 0) {
+                    phoneImages[0].classList.add('visible');
+                }
+
+                const observer = new IntersectionObserver(entries => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            const imgIndex = entry.target.dataset.imgIndex;
+                            phoneImages.forEach((img, index) => {
+                                img.classList.toggle('visible', index == imgIndex);
+                            });
+                        }
+                    });
+                }, { 
+                    threshold: 0.6 
+                });
+
+                featureItems.forEach(item => observer.observe(item));
+            }
+
+            // --- Router Logic ---
+            const routes = {
+                '/': 'home',
+                '/privacy': 'privacy',
+                '/terms-and-conditions': 'terms',
+                '/about': 'about'
+            };
+
+            const router = () => {
+                const path = window.location.hash.slice(1) || '/';
+                const pageKey = routes[path] || 'home'; 
+                
+                contentArea.innerHTML = pages[pageKey];
+                window.scrollTo(0, 0);
+
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.classList.remove('active');
+                    if (link.dataset.page === pageKey) {
+                        link.classList.add('active');
+                    }
+                });
+                
+                if (pageKey === 'home') {
+                    initStickyScroll();
+                }
+            };
+
+            window.addEventListener('hashchange', router);
+            router(); // Initial load
+        });
+    </script>
+</body>
+</html>
